@@ -1,0 +1,24 @@
+MUSICXML : A_la_claire_fontaine.mxl
+
+SET MARKS :
+-- nothing defined.
+-- Example with "A" on measure 1, and "B" on measure 9 :
+--   1:A
+--   9:B
+
+PLAY MARKS :
+-- Nothing defined.
+-- Example to organize MARKS A and B : 
+--  A
+--  B
+--  A
+
+PARTS :
+P1_chant:played/visible,alias=Soprano/S
+P2_Alto:played/visible
+P3_Ténor:played/visible
+P4_Bass:played/visible
+
+ORNAMENTS :
+1.1:divisions_per_quarter=4
+12.2:arpeggiate

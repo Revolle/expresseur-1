@@ -1,0 +1,6 @@
+section(A)
+C G
+section(B)
+F Em
+part(P1)
+A B A B
