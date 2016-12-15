@@ -1,0 +1,12 @@
+LIBRARY   BASSLUA
+EXPORTS
+	basslua_open	@1
+	basslua_close   @2
+	basslua_table		@3
+	basslua_call	@4
+	basslua_getMidiinEvent	@5
+	basslua_setSelector	@6
+	basslua_selectorSearch @7
+	basslua_getLog	@8
+	basslua_openMidiIn	@9
+	basslua_setMode	@10
