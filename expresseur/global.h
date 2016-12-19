@@ -142,7 +142,11 @@
 #define NULL_STRING "-9999"
 
 enum{ EMPTYVIEWER, BITMAPVIEWER, MUSICXMLVIEWER };
-#define RUN_WIN 1
-//#define RUN_MAX 1
 
-
+#if defined(_WIN32) || defined(WIN32)
+    #define RUN_WIN 1
+#elif defined(__APPLE__)
+    #define RUN_MAC 1
+#else
+    #error Unsupported platform
+#endif
