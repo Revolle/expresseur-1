@@ -105,7 +105,7 @@ private:
 	wxBoxSizer *sizer_text_viewer;
 	wxSizerItem *sizer_Text, *sizer_viewer;
 
-	HMODULE musicxmlDll;
+	wxDynamicLibrary musicxmlDll;
 	MNLReleaseProc *MNLRelease;
 	MNLLoadProc *MNLLoad;
 

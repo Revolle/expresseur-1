@@ -22,7 +22,7 @@ class musicxmlscore
 {
 
 public:
-	musicxmlscore(wxWindow *parent, wxWindowID id, mxconf* config, HMODULE myDll);
+	musicxmlscore(wxWindow *parent, wxWindowID id, mxconf* config, const wxDynamicLibrary  &myDll);
 	~musicxmlscore();
 
 	void onPaint(wxPaintEvent& event);
@@ -68,8 +68,6 @@ private:
 	bool xmlLoad();
 	bool xmlLoadMusicXml();
 
-	HMODULE myDll;
-	void MNLRelease();
 	long docID;
 	int nrChord;
 

@@ -53,6 +53,7 @@
 #include "wx/clipbrd.h"
 #include "wx/stdpaths.h"
 #include "wx/dir.h"
+#include "wx/dynlib.h"
 #include "MNL.h"
 
 #include "global.h"
@@ -86,6 +87,7 @@
 #ifndef wxHAS_IMAGES_IN_RESOURCES
 #endif
 
+/*
 #if USE_XPM_BITMAPS
     #include "bitmaps/new.xpm"
     #include "bitmaps/open.xpm"
@@ -96,7 +98,7 @@
     #include "bitmaps/print.xpm"
     #include "bitmaps/help.xpm"
 #endif // USE_XPM_BITMAPS
-
+*/
 
 // Define a new application
 class MyApp : public wxApp
@@ -326,45 +328,41 @@ Expresseur::Expresseur(wxFrame* parent,wxWindowID id,const wxString& title,const
 	fdll.AppendDir("MNL folder");
 	fdll.SetFullName("MusicNotationLibrary I.dll");
 	wxString sdll = fdll.GetFullPath();
-	LPCWSTR	lpdll;
-	lpdll = sdll.c_str();
-	musicxmlDll = LoadLibrary(lpdll);
-	if (musicxmlDll == NULL)
+	musicxmlDll.Load(sdll);
+	if (musicxmlDll.IsLoaded() == false)
 	{
-		int err = GetLastError();
 		wxString serr;
-		serr.Printf("error#%d LoadLibrary '%s'", err, sdll);
+		serr.Printf("error LoadLibrary '%s'", sdll);
 		wxMessageBox(serr, "error library for score notation");
 	}
 	else
 	{
-		//wxString serr;
-		//serr.Printf("OK LoadLibrary '%s'", sdll);
-		//wxMessageBox(serr, "library for score notation");
-		MNLLoad = (MNLLoadProc *)GetProcAddress(musicxmlDll, "MNLLoad");
-		if (MNLLoad == NULL)
+		bool retSuccess = false ;
+		MNLLoad = (MNLLoadProc *)(musicxmlDll.GetSymbol( "MNLLoad" , &retSuccess )); 
+		//MNLLoad = (MNLLoadProc *)GetProcAddress(musicxmlDll, "MNLLoad");
+		if ((MNLLoad == NULL) || (retSuccess == false ))
 		{
 			wxMessageBox("error GetProcAddress MNLLoad", "error library for score notation");
-			FreeLibrary(musicxmlDll);
-			musicxmlDll = NULL;
+			musicxmlDll.Unload();
 		}
 		else
 		{
-			long retcode = MNLLoad("MNL folder", "8FF2B7A1BD5ACCA4");
+			char chmnlfolder[] = "MNL folder" ;
+			char mnlCode[] = "8FF2B7A1BD5ACCA4" ;
+			long retcode = MNLLoad(chmnlfolder, mnlCode);
 			if (retcode != 0)
 			{
 				wxMessageBox("error MNLLoad MNL folder", "error library for score notation");
 				MNLRelease();
-				FreeLibrary(musicxmlDll);
-				musicxmlDll = NULL;
+				musicxmlDll.Unload();
 			}
 			else
 			{
-				MNLRelease = (MNLReleaseProc *)GetProcAddress(musicxmlDll, "MNLRelease");
+				MNLRelease = (MNLReleaseProc *)(musicxmlDll.GetSymbol( "MNLRelease"));
 			}
 		}
 	}
-
+	
 	// set the menus
 	wxMenu *fileMenu = new wxMenu;
 	fileMenu->Append(wxID_NEW, _("New"));
@@ -557,11 +555,11 @@ Expresseur::~Expresseur()
 	delete mExpression;
 	delete fileHistory;
 
-	if (musicxmlDll)
+	if (musicxmlDll.IsLoaded())
 	{
 		if (MNLRelease)
 			MNLRelease();
-		FreeLibrary(musicxmlDll);
+		musicxmlDll.Unload() ;
 	}
 
 	basslua_close();
@@ -925,12 +923,14 @@ void Expresseur::SetMenuAction(bool all)
 	if (editMode == false)
 	{
 		mTextscore->SelectNone();
-		mTextscore->HideNativeCaret();;
+		//mTextscore->HideNativeCaret();;
 	}
+	/*
 	else
 	{
 		mTextscore->ShowNativeCaret(true);;
 	}
+	*/
 }
 void Expresseur::OnMenuAction(wxCommandEvent& event)
 {
@@ -1803,7 +1803,7 @@ If you have a software instrument (e.g. Pianoteq ), connect it on the virtual mi
 Asio audio is used to play SF2 software instruments within Expresseur. If you have an electronic-piano to render the notes, you can skip this step.\n\
 To use Asio audio with low latency, please install at minimum freeware Asio4all audio driver.");
 #else
-		s = _("No audio device installed.\n\
+		saudio = _("No audio device installed.\n\
 Audio is used to play SF2 software instruments within Expresseur. If you have an electroni-piano to play the notes, you can skip this step.\n");
 #endif
 		topsizer_audio->Add(new wxStaticText(pwizard_audio, wxID_ANY, saudio), sizerFlagMaximumPlace);

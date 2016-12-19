@@ -144,7 +144,7 @@ typedef struct t_vi_opened
     CFBundleRef vsti_modulePtr;// library dll loaded for the VSTi
 #endif
 	int vsti_nb_outputs; // number of audio outputs of the vsti
-	bool vsti_midi_prog; // capacity of the VSTi to receive MIDI prog  ( else , vst-prog will be sent )
+	bool vsti_midi_prog; // vst-prog will be sent 
 	int vsti_last_prog; // last vst-prog sent to the VSTi on next update
 	bool vsti_todo_prog;// pending vst-prog to send to the VSTi on next update
 	T_midimsg vsti_pending_midimsg[MAX_VSTI_PENDING_MIDIMSG]; // pending midi msg to send to the VSTi on next update
@@ -855,11 +855,14 @@ extern "C"
 static void vsti_send_shortmsg(char vsti_nr, T_midimsg midimsg)
 {
 	T_vi_opened *vi = &(g_vi_opened[vsti_nr]);
+	if (((midimsg.bData[0] >> 4) == MIDI_CONTROL) &&  (midimsg.bData[1] != 0) && (midimsg.bData[2] != 99)) // bank 99
+		vi->vsti_midi_prog == false ;
 	if (((midimsg.bData[0] >> 4) == MIDI_PROGRAM) && (vi->vsti_midi_prog == false) && (midimsg.bData[1] != vi->vsti_last_prog))
 	{
-		// no program MIDI supported, send the VST program
+		// send the VST program
 		vi->vsti_last_prog = midimsg.bData[1];
 		vi->vsti_todo_prog = true;
+		vi->vsti_midi_prog == true ;
 		return;
 	}
 	if (vi->vsti_nb_pending_midimsg >= MAX_VSTI_PENDING_MIDIMSG)
@@ -1097,7 +1100,6 @@ static bool vsti_start(const char *fname, char vsti_nr)
 	mProgram.thisProgramIndex = 0;
     VstIntPtr nbProgram ;
     nbProgram = vi->vsti_plugins->dispatcher(vi->vsti_plugins, effGetMidiProgramName, 0, 0, &mProgram, 0.0f);
-	vi->vsti_midi_prog = (nbProgram > 0);
 
 	vi->vsti_plugins->dispatcher(vi->vsti_plugins, effOpen, 0, 0, NULL, 0.0f);
 
@@ -1337,7 +1339,7 @@ static bool vst_create_list_prog(const char *fname)
 			bool retCode = vi.vsti_plugins->dispatcher(vi.vsti_plugins, effGetProgramNameIndexed, nrProgram, 0, nameProgram, 0.0f);
 			if (retCode)
 			{
-				fprintf(ftxt, "%s(P%d)\n", nameProgram, nrProgram);
+				fprintf(ftxt, "%s_vst(P99/%d)\n", nameProgram, nrProgram);
 			}
 		}
 	}
@@ -1573,7 +1575,7 @@ static void vi_init()
 		g_vi_opened[n].vsti_last_prog = -1;
 		g_vi_opened[n].vsti_todo_prog = false;
 		g_vi_opened[n].vsti_nb_pending_midimsg = 0;
-		g_vi_opened[n].vsti_midi_prog = false;
+		g_vi_opened[n].vsti_midi_prog = true;
 		g_vi_opened[n].vsti_nb_outputs = 2;
 	}
 	vsti_init();

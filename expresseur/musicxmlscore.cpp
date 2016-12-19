@@ -43,6 +43,7 @@
 #include "wx/wfstream.h"
 #include "wx/zipstrm.h"
 #include "wx/dynarray.h"
+#include "wx/dynlib.h"
 
 #include "global.h"
 #include "luabass.h"
@@ -68,7 +69,7 @@ EVT_PAINT(musicxmlscore::onPaint)
 EVT_SIZE(musicxmlscore::OnSize)
 wxEND_EVENT_TABLE()
 
-musicxmlscore::musicxmlscore(wxWindow *parent, wxWindowID id, mxconf* lconf, HMODULE musicxmlDll)
+musicxmlscore::musicxmlscore(wxWindow *parent, wxWindowID id, mxconf* lconf, const wxDynamicLibrary  &myDll)
 : viewerscore(parent, id)
 {
 	mParent = parent;
@@ -81,8 +82,6 @@ musicxmlscore::musicxmlscore(wxWindow *parent, wxWindowID id, mxconf* lconf, HMO
 
 	this->SetBackgroundStyle(wxBG_STYLE_PAINT);
 
-	myDll = musicxmlDll;
-	
 	MNLOpenDocument = NULL;
 	MNLGetScoreInformation = NULL;
 	MNLDisplayPage = NULL;
@@ -93,22 +92,21 @@ musicxmlscore::musicxmlscore(wxWindow *parent, wxWindowID id, mxconf* lconf, HMO
 	MNLMeasureUnitsToPosition = NULL;
 	MNLGetPageMeasures = NULL;
 
-	MNLOpenDocument = (MNLOpenDocumentProc *)GetProcAddress(myDll, "MNLOpenDocument");
-	MNLGetPageSize = (MNLGetPageSizeProc *)GetProcAddress(myDll, "MNLGetPageSize");
-	MNLGetScoreInformation = (MNLGetScoreInformationProc *)GetProcAddress(myDll, "MNLGetScoreInformation");
-	MNLDisplayPage = (MNLDisplayPageProc *)GetProcAddress(myDll, "MNLDisplayPage");
-	MNLDisplayWrap = (MNLDisplayWrapProc *)GetProcAddress(myDll, "MNLDisplayWrap");
-	MNLNewPageLayout = (MNLNewPageLayoutProc *)GetProcAddress(myDll, "MNLNewPageLayout");
-	MNLCloseDocument = (MNLCloseDocumentProc *)GetProcAddress(myDll, "MNLCloseDocument");
-	MNLMeasureUnitsToPosition = (MNLMeasureUnitsToPositionProc *)GetProcAddress(myDll, "MNLMeasureUnitsToPosition");
-	MNLGetMeasurePosition = (MNLGetMeasurePositionProc *)GetProcAddress(myDll, "MNLGetMeasurePosition");
-	MNLGetPageMeasures = (MNLGetPageMeasuresProc *)GetProcAddress(myDll, "MNLGetPageMeasures");
-	MNLFindPosition = (MNLFindPositionProc *)GetProcAddress(myDll, "MNLFindPosition");
+	MNLOpenDocument = (MNLOpenDocumentProc *)(myDll.GetSymbol("MNLOpenDocument"));
+	MNLGetPageSize = (MNLGetPageSizeProc *)(myDll.GetSymbol("MNLGetPageSize"));
+	MNLGetScoreInformation = (MNLGetScoreInformationProc *)(myDll.GetSymbol("MNLGetScoreInformation"));
+	MNLDisplayPage = (MNLDisplayPageProc *)(myDll.GetSymbol("MNLDisplayPage"));
+	MNLDisplayWrap = (MNLDisplayWrapProc *)(myDll.GetSymbol("MNLDisplayWrap"));
+	MNLNewPageLayout = (MNLNewPageLayoutProc *)(myDll.GetSymbol("MNLNewPageLayout"));
+	MNLCloseDocument = (MNLCloseDocumentProc *)(myDll.GetSymbol("MNLCloseDocument"));
+	MNLMeasureUnitsToPosition = (MNLMeasureUnitsToPositionProc *)(myDll.GetSymbol("MNLMeasureUnitsToPosition"));
+	MNLGetMeasurePosition = (MNLGetMeasurePositionProc *)(myDll.GetSymbol("MNLGetMeasurePosition"));
+	MNLGetPageMeasures = (MNLGetPageMeasuresProc *)(myDll.GetSymbol("MNLGetPageMeasures"));
+	MNLFindPosition = (MNLFindPositionProc *)(myDll.GetSymbol("MNLFindPosition"));
 
 }
 musicxmlscore::~musicxmlscore()
 {
-	MNLRelease();
 	if (xmlCompile != NULL)
 		delete xmlCompile;
 	xmlCompile = NULL;
@@ -120,14 +118,11 @@ bool musicxmlscore::xmlIsOk()
 		return false;
 	return (xmlCompile->isOk());
 }
-void musicxmlscore::MNLRelease()
-{
-}
 bool musicxmlscore::setFile(const wxFileName &lfilename, bool WXUNUSED(onstart))
 {
 	wxBusyCursor wait;
 
-	if ((!myDll) || (!MNLOpenDocument))
+	if (!MNLOpenDocument)
 		return false;
 
 	prevPos = -1;
@@ -402,7 +397,7 @@ void musicxmlscore::setPosition(int pos, bool playing, bool quick)
 }
 void musicxmlscore::OnLeftDown(wxMouseEvent& event)
 {
-	if ((!myDll) || (!docID))
+	if (!docID)
 		return;
 	wxClientDC dc(this);
 	wxPoint mPoint = event.GetLogicalPosition(dc);
@@ -438,7 +433,7 @@ void musicxmlscore::OnSize(wxSizeEvent& WXUNUSED(event))
 }
 void musicxmlscore::newLayout()
 {
-	if ((!myDll) || (!docID))
+	if (!docID)
 		return;
 	wxClientDC dc(this);
 	sizeClient = dc.GetSize();
@@ -461,7 +456,7 @@ void musicxmlscore::newLayout()
 }
 void musicxmlscore::onPaint(wxPaintEvent& WXUNUSED(event))
 {
-	if ((!myDll) || (!docID) || (!sizeOk) || (!xmlIsOk()))
+	if ((!docID) || (!sizeOk) || (!xmlIsOk()))
 		return;
 	wxAutoBufferedPaintDC dc(this);
 	sizeOk = false;
@@ -474,7 +469,7 @@ void musicxmlscore::onPaint(wxPaintEvent& WXUNUSED(event))
 }
 bool musicxmlscore::GetScoreInfo()
 {
-	if ((!myDll) || (!docID) || (!sizeOk) || (!xmlIsOk()))
+	if ((!docID) || (!sizeOk) || (!xmlIsOk()))
 		return false;
 
 	char *title;
