@@ -467,7 +467,6 @@ void midishortcut::reset()
 	int nbSelector = mConf->get(CONFIG_SHORTCUTNB, 0);
 	wxString name, saction, key;
 	wxString sdevice, sevent, smin, smax, sparam, schannel, stopOnMatch;
-	deviceToOpen[MAX_MIDIIN_DEVICE];
 	for (int nrDevice = 0; nrDevice < MAX_MIDIIN_DEVICE; nrDevice++)
 		deviceToOpen[nrDevice] = false;
 	for (int nrSelector = 0; nrSelector < nbSelector; nrSelector++)
