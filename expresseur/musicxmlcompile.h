@@ -284,7 +284,6 @@ private:
 	void calculateDuration(int duration, int divisions, int *duration_done , wxString *typeNote , int *dot , int *tuplet);
 	wxFileName txtFile;
 	wxFileName musicxmlFile;
-	wxXmlDocument *xmlDoc;
 	c_score_partwise *score; // original score
 	l_measureMark lMeasureMarks; // list of markers : a marker is linked to a measure in the original score . e.g. marker[1]=measure(10), marker[2] =measure(14) , marker[3]=18
 	wxArrayInt markList; // list of markers to play succesfully, refer to measureMark . e.g. 1,2,2,1 means play marker[1], marker[2] twice, and marker[1] to finish

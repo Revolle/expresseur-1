@@ -43,8 +43,8 @@ enum
 };
 
 wxBEGIN_EVENT_TABLE(logerror, logerror::wxDialog)
-EVT_BUTTON(IDM_LOGERROR_CLEAR, OnLogerrorClear)
-EVT_BUTTON(IDM_LOGERROR_CLOSE, OnLogerrorClose)
+EVT_BUTTON(IDM_LOGERROR_CLEAR, logerror::OnLogerrorClear)
+EVT_BUTTON(IDM_LOGERROR_CLOSE, logerror::OnLogerrorClose)
 EVT_SIZE(logerror::OnSize)
 wxEND_EVENT_TABLE()
 
