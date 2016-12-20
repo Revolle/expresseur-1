@@ -15,10 +15,8 @@
 
 #ifdef _WIN32
 #define V_PC 1
-#define V_CPP 1
 #ifdef _WIN64
 #define V_PC 1
-#define V_CPP 1
 #endif
 #elif __APPLE__
 #include "TargetConditionals.h"
@@ -57,11 +55,7 @@
 #include <math.h>
 #endif
 
-#ifdef V_CPP
 #include <lua.hpp>
-#else
-#include <lua.h>
-#endif
 #include <lauxlib.h>
 #include <lualib.h>
 #include <bass.h>
