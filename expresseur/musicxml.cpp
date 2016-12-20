@@ -2163,7 +2163,6 @@ c_measure::c_measure(wxXmlNode *xmlnode)
 		{
 			c_measure_sequence *mnote = new c_measure_sequence(new c_note(child), t_note);
 			measure_sequences.Append(mnote);
-			(c_note *)mnote;
 		}
 		else if (name == "harmony")
 			measure_sequences.Append(new c_measure_sequence(new c_harmony(child), t_harmony));

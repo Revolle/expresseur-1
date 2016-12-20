@@ -292,7 +292,12 @@ void musicxmlscore::drawpage(int ipageNr, bool left , wxDC *dc)
 		pageNr = (left ? pageNrLeft : pageNrRight );
 	if ((ipageNr == -1 ) || (pageNr != (left ? pageNrLeft : pageNrRight)))
 	{
+#ifdef RUN_WIN
 		HWND mHwnd = (HWND)(dc->GetHandle());
+#endif
+#ifdef RUN_MAC
+		CGContextRef mHwnd = (CGContextRef)(dc->GetHandle());
+#endif
 		MNLDisplayPage(docID, pageNr, left ? 0 : sizeX , 0, 1.0, 
 			left ? 0 : sizeX , 0, left ? sizeX: 2*sizeX, sizeY, (long)(mHwnd));
 		if ( left )
@@ -437,7 +442,7 @@ void musicxmlscore::newLayout()
 		return;
 	wxClientDC dc(this);
 	sizeClient = dc.GetSize();
-	wxSize mmsizeClient = dc.GetSizeMM();
+	//wxSize mmsizeClient = dc.GetSizeMM();
 	if ((sizeClient.GetWidth() < 200) || (sizeClient.GetHeight() < 100))
 		return;
 	sizeX = sizeClient.GetX() / 2 ;

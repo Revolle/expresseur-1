@@ -1525,7 +1525,7 @@ void musicxmlcompile::readMarks(bool full)
 int musicxmlcompile::compileNote(c_part *part, c_note *note, int measureNr, int originalMeasureNr, int t, int division_measure, int division_beat, int division_quarter, int repeat, int key_fifths)
 {
 	// compile a note in the lMusicxmlevents
-	if ((note->grace)  || (note->rest) || (note->cue) || (note->tie) && ((note->tie->stop) || ((note->tie->compiled))))
+	if ((note->grace)  || (note->rest) || (note->cue) || ((note->tie) && ((note->tie->stop) || (note->tie->compiled))))
 	{
 		if (! note->chord)
 			t += (note->duration == NULL_INT) ? 0 : note->duration;
